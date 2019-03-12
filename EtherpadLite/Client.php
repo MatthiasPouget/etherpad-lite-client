@@ -7,7 +7,7 @@ namespace EtherpadLite;
 
 class Client {
 
-  const API_VERSION             = '1.2.11';
+  const API_VERSION             = '1.2.13';
 
   const CODE_OK                 = 0;
   const CODE_INVALID_PARAMETERS = 1;
@@ -48,44 +48,53 @@ class Client {
   }
 
   protected function call($function, array $arguments = array(), $method = 'GET'){
+      dump('ici');die;
     $arguments['apikey'] = $this->apiKey;
     $arguments = array_map(array($this, 'convertBools'), $arguments);
+    $arguments = array_reverse($arguments);
     $arguments = http_build_query($arguments, '', '&');
-    $url = $this->baseUrl."/".self::API_VERSION."/".$function;
+
+      $url = $this->baseUrl."/".self::API_VERSION."/".$function;
+
     if ($method !== 'POST'){
       $url .=  "?".$arguments;
     }
     // use curl of it's available
     if (function_exists('curl_init')){
       $c = curl_init($url);
+
       curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+      curl_setopt($c,CURLOPT_SSL_VERIFYPEER, false);
       curl_setopt($c, CURLOPT_TIMEOUT, 20);
       if ($method === 'POST'){
         curl_setopt($c, CURLOPT_POST, true);
         curl_setopt($c, CURLOPT_POSTFIELDS, $arguments);
       }
       $result = curl_exec($c);
-      curl_close($c);
-    // fallback to plain php
+//      curl_close($c);
+        // fallback to plain php
     } else {
-      $params = array('http' => array('method' => $method, 'ignore_errors' => true, 'header' => 'Content-Type:application/x-www-form-urlencoded'));
-      if ($method === 'POST'){
-        $params['http']['content'] = $arguments;
-      }
-      $context = stream_context_create($params);
-      $fp = fopen($url, 'rb', false, $context);
-      $result = $fp ? stream_get_contents($fp) : null;
+        $params = array('http' => array('method' => $method, 'ignore_errors' => true, 'header' => 'Content-Type:application/x-www-form-urlencoded'));
+        if ($method === 'POST') {
+            $params['http']['content'] = $arguments;
+        }
+        $context = stream_context_create($params);
+        $fp = fopen($url, 'rb', false, $context);
+        $result = $fp ? stream_get_contents($fp) : null;
     }
-    
+
     if(!$result){
-      throw new \UnexpectedValueException("Empty or No Response from the server");
+        throw new \RuntimeException(curl_error($c));
+
+        throw new \UnexpectedValueException("Empty or No Response from the server");
     }
     
     $result = json_decode($result);
     if ($result === null){
       throw new \UnexpectedValueException("JSON response could not be decoded");
     }
-    return $this->handleResult($result);
+
+      return $this->handleResult($result);
   }
 
   protected function handleResult($result){
@@ -572,4 +581,6 @@ class Client {
 
 
 }
+
+
 
