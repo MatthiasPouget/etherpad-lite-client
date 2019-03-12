@@ -7,7 +7,7 @@ Etherpad Lite is a collaborative editor provided by the Etherpad Foundation (htt
 Install from packagist:
 
 ```
-composer require tomnomnom/etherpad-lite-client
+composer require MatthiasPouget/etherpad-lite-client
 ```
 
 A legacy `etherpad-lite-client.php` file is included for people who are unwilling/unable to switch to the new
