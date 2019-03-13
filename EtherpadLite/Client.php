@@ -48,7 +48,6 @@ class Client {
   }
 
   protected function call($function, array $arguments = array(), $method = 'GET'){
-      dump('ici');die;
     $arguments['apikey'] = $this->apiKey;
     $arguments = array_map(array($this, 'convertBools'), $arguments);
     $arguments = array_reverse($arguments);
